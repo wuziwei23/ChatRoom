@@ -129,11 +129,11 @@ void* commu(void* arg){
         int len = recv(ClientInfo->fd, buf, sizeof(buf), 0);
         if(len > 0){
             //暂时不实现广播操作
-            fwrite(buf, 1, len, stdout);
-            fflush(stdout);
+            printf("%d: %s", ClientInfo->fd, buf);
+            send(ClientInfo->fd, buf, sizeof(buf) + 1);
         }
         else if(len == 0){
-            printf("%s 断开了连接...\n", ip);
+            printf("%d 断开了连接...\n", ClientInfo->fd);
             break;
         }
         else{

@@ -19,7 +19,7 @@ int main(){
     server_addr.sin_port = htons(9999);
 
     inet_pton(AF_INET, "192.168.80.128",
-              &server_addr.sin_family.s_addr);
+              &server_addr.sin_addr.s_addr);
 
     int ret = connect(connect_fd, (struct sockaddr *)&server_addr,
                       sizeof(server_addr));
@@ -29,6 +29,29 @@ int main(){
     }
     
     while(1){
+        char buf[1024];
+        if(fgets(buf, sizeof(buf), stdin) == NULL){
+            printf("input error...\n");
+            break;
+        }
+        send(connect_fd, buf, sizeof(buf) + 1);
 
+        memset(buf, 0, sizeof(buf));
+        int len = recv(connect_fd, buf, sizeof(buf), 0);
+        if(len > 0){
+
+        }
+        else if(len == 0){
+            printf("%s\n", buf);
+            break;
+        }
+        else{
+            perror("recv");
+            break;
+        }
     }
+
+    close(connect_fd);
+
+    return 0;
 }
