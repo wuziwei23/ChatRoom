@@ -42,20 +42,6 @@ int main(){
         }
         send(connect_fd, buf, strlen(buf), 0);
 
-        // memset(buf, 0, sizeof(buf));
-        // int len = recv(connect_fd, buf, sizeof(buf), 0);
-        // if(len > 0){
-        //     buf[len] = '\0';
-        //     printf("%s\n", buf);
-        // }
-        // else if(len == 0){
-        //     printf("服务器已经断开\n");
-        //     break;
-        // }
-        // else{
-        //     perror("recv");
-        //     break;
-        // }
     }
 
 
@@ -77,11 +63,11 @@ void *receive(void* arg){
         }
         else if(len == 0){
             printf("服务器已经断开...\n");
-            exit(0);
+            _exit(0);
         }
         else{
             perror("recv");
-            exit(1);
+            _exit(1);
         }
     }
 
