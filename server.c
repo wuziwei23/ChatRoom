@@ -130,10 +130,11 @@ void* commu(void* arg){
         if(len > 0){
             //暂时不实现广播操作
             printf("%d: %s", ClientInfo->fd, buf);
-            send(ClientInfo->fd, buf, sizeof(buf));
+            send(ClientInfo->fd, buf, sizeof(buf), 0);
         }
         else if(len == 0){
-            printf("%d 断开了连接...\n", ClientInfo->fd);
+            printf("IP:%s 端口:%d 断开了连接...\n",
+                   ip, ntohs(ClientInfo->addr.sin_port));
             break;
         }
         else{

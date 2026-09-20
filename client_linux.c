@@ -43,7 +43,7 @@ int main(){
             printf("%s\n", buf);
         }
         else if(len == 0){
-            printf("%s\n", buf);
+            printf("服务器已经断开\n");
             break;
         }
         else{
