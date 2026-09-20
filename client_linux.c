@@ -34,7 +34,7 @@ int main(){
             printf("input error...\n");
             break;
         }
-        send(connect_fd, buf, sizeof(buf));
+        send(connect_fd, buf, sizeof(buf), 0);
 
         memset(buf, 0, sizeof(buf));
         int len = recv(connect_fd, buf, sizeof(buf), 0);
