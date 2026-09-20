@@ -65,7 +65,7 @@ int main(){
 }
 
 void *receive(void* arg){
-    int connect_fd = (int)arg;
+    int connect_fd = (int)(long)arg;
 
     while(1){
         char msg[1024];
