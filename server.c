@@ -126,13 +126,18 @@ void* commu(void* arg){
         ntohs(ClientInfo->addr.sin_port));
     while(1){
         char buf[1024];
-        int len = recv(ClientInfo->fd, buf, sizeof(buf), 0);
+        int len = recv(ClientInfo->fd, buf, sizeof(buf) - 1, 0);
         if(len > 0){
-            printf("%s\n", buf);
+            buf[len] = '\0';
+            printf("%s: %s", ip, buf);
+
+            char msg[1024 + 64];
+            snprintf(msg, sizeof(msg), "%s: %s", ip, buf);
+
             pthread_mutex_lock(&mutex);
             for (int i = 0; i < MAX_CLIENTS; ++i){
                 if(clients[i].fd != -1 && clients[i].fd != ClientInfo->fd){
-                    send(clients[i].fd, buf, len, 0);
+                    send(clients[i].fd, msg, strlen(msg), 0);
                 }
             }
             pthread_mutex_unlock(&mutex);
