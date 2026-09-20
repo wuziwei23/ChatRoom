@@ -31,7 +31,7 @@ int main(){
     }
 
     pthread_t thread;
-    pthread_create(&thread, NULL, receive, connect_fd);
+    pthread_create(&thread, NULL, receive, (void*)(long)connect_fd);
     pthread_detach(thread);
 
     while(1){
@@ -76,12 +76,12 @@ void *receive(void* arg){
             printf("%s", msg);
         }
         else if(len == 0){
-            printf("服务器已经断开\n");
-            break;
+            printf("服务器已经断开...\n");
+            exit(0);
         }
         else{
             perror("recv");
-            break;
+            exit(1);
         }
     }
 

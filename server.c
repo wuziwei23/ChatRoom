@@ -128,6 +128,7 @@ void* commu(void* arg){
         char buf[1024];
         int len = recv(ClientInfo->fd, buf, sizeof(buf), 0);
         if(len > 0){
+            printf("%s\n", buf);
             pthread_mutex_lock(&mutex);
             for (int i = 0; i < MAX_CLIENTS; ++i){
                 if(clients[i].fd != -1 && clients[i].fd != ClientInfo->fd){
