@@ -1,13 +1,22 @@
+// Windows 终端聊天室客户端 —— pthread 版本
+//
+// 与 client_win.c 功能完全一致, 唯一区别是线程部分用 pthread 代替 _beginthreadex。
+//
+// 注意: 这个文件只能在 MinGW(posix 线程模型)下编译, MSVC 没有 pthread.h。
+//       如果目标包括 MSVC, 请用 client_win.c。
+//
+// 编译: gcc client_win_pthread.c -o client_win_pthread.exe -lws2_32 -pthread
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <process.h>      // _beginthreadex
+#include <pthread.h>      // pthread_create / pthread_detach 代替 process.h
 #include <winsock2.h>     // socket/connect/send/recv
 #include <ws2tcpip.h>     // inet_pton
 
-#pragma comment(lib, "ws2_32.lib")   // MSVC 下自动链接; MinGW 需手动加 -lws2_32
+#pragma comment(lib, "ws2_32.lib")   // 仅 MSVC 有效; MinGW 需手动加 -lws2_32
 
-unsigned __stdcall receive(void *arg);
+void *receive(void *arg);
 
 int main(){
     // 1. 初始化 Winsock(Windows 上使用 socket 前必须做这一步)
@@ -33,9 +42,8 @@ int main(){
     // 服务器 IP, 改成你服务端实际所在的地址
     inet_pton(AF_INET, "192.168.80.128", &server_addr.sin_addr.s_addr);
 
-    int ret = connect(connect_fd, (struct sockaddr *)&server_addr,
-                      sizeof(server_addr));
-    if (ret == SOCKET_ERROR){
+    if (connect(connect_fd, (struct sockaddr *)&server_addr,
+                sizeof(server_addr)) == SOCKET_ERROR){
         fprintf(stderr, "connect failed: %d\n", WSAGetLastError());
         closesocket(connect_fd);
         WSACleanup();
@@ -43,15 +51,18 @@ int main(){
     }
 
     // 4. 创建接收线程
-    uintptr_t handle = _beginthreadex(NULL, 0, receive,
-                                      (void *)(uintptr_t)connect_fd, 0, NULL);
-    if (handle == 0){
-        fprintf(stderr, "_beginthreadex failed\n");
+    // SOCKET 是指针大小, 必须经 uintptr_t 转换再塞进 void*, 否则 64 位下会被截断
+    pthread_t thread;
+    int ret = pthread_create(&thread, NULL, receive,
+                             (void *)(uintptr_t)connect_fd);
+    if (ret != 0){
+        // pthread 系列函数直接把错误码当返回值, 不用查 errno
+        fprintf(stderr, "pthread_create: %s\n", strerror(ret));
         closesocket(connect_fd);
         WSACleanup();
         return -1;
     }
-    CloseHandle((HANDLE)handle);    // 分离线程, 结束时自动回收
+    pthread_detach(thread);   // 分离线程, 结束时自动回收
 
     // 5. 主线程: 读终端输入并发送
     while (1){
@@ -68,7 +79,7 @@ int main(){
     return 0;
 }
 
-unsigned __stdcall receive(void *arg){
+void *receive(void *arg){
     SOCKET connect_fd = (SOCKET)(uintptr_t)arg;
 
     while (1){
@@ -81,7 +92,7 @@ unsigned __stdcall receive(void *arg){
         }
         else if (len == 0){
             printf("服务器已经断开...\n");
-            _exit(0);
+            _exit(0);   // 主线程正阻塞在 fgets, 直接结束整个进程
         }
         else{
             fprintf(stderr, "recv failed: %d\n", WSAGetLastError());
@@ -89,5 +100,5 @@ unsigned __stdcall receive(void *arg){
         }
     }
 
-    return 0;
+    return NULL;
 }
