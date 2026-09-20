@@ -34,12 +34,13 @@ int main(){
             printf("input error...\n");
             break;
         }
-        send(connect_fd, buf, sizeof(buf) + 1);
+        send(connect_fd, buf, sizeof(buf));
 
         memset(buf, 0, sizeof(buf));
         int len = recv(connect_fd, buf, sizeof(buf), 0);
         if(len > 0){
-
+            buf[len] = '\0';
+            printf("%s\n", buf);
         }
         else if(len == 0){
             printf("%s\n", buf);

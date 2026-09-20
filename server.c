@@ -130,7 +130,7 @@ void* commu(void* arg){
         if(len > 0){
             //暂时不实现广播操作
             printf("%d: %s", ClientInfo->fd, buf);
-            send(ClientInfo->fd, buf, sizeof(buf) + 1);
+            send(ClientInfo->fd, buf, sizeof(buf));
         }
         else if(len == 0){
             printf("%d 断开了连接...\n", ClientInfo->fd);
