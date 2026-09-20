@@ -128,9 +128,13 @@ void* commu(void* arg){
         char buf[1024];
         int len = recv(ClientInfo->fd, buf, sizeof(buf), 0);
         if(len > 0){
-            //暂时不实现广播操作
-            printf("%d: %s", ClientInfo->fd, buf);
-            send(ClientInfo->fd, buf, sizeof(buf), 0);
+            pthread_mutex_lock(&mutex);
+            for (int i = 0; i < MAX_CLIENTS; ++i){
+                if(clients[i].fd != -1 && clients[i].fd != ClientInfo->fd){
+                    send(clients[i].fd, buf, len, 0);
+                }
+            }
+            pthread_mutex_unlock(&mutex);
         }
         else if(len == 0){
             printf("IP:%s 端口:%d 断开了连接...\n",
